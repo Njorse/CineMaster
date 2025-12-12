@@ -3,7 +3,7 @@
 namespace App\Providers;
 
 use Illuminate\Support\ServiceProvider;
-use Illuminate\Support\Facades\URL; // <--- 1. AGREGADO AQUÍ
+use Illuminate\Support\Facades\URL;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -20,7 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        // <--- 2. AGREGADO AQUÍ: Forzar HTTPS para que cargue el CSS
         if($this->app->environment('production')) {
             URL::forceScheme('https');
         }
