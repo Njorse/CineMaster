@@ -1,0 +1,79 @@
+GUÍA DE DESPLIEGUE: CineMaster en Render + Aiven (MySQL)
+
+Esta guía te llevará paso a paso para subir tu proyecto Laravel a Render.com conectándolo con tu base de datos en Aiven.
+
+============================================================
+PASO 1: PREPARAR LA BASE DE DATOS (AIVEN)
+============================================================
+1. Entra a tu consola de Aiven y ve a tu servicio de MySQL.
+2. Ten a mano los siguientes datos ("Connection details"):
+   - Host (ej. mysql-1234.aivencloud.com)
+   - Port (ej. 23897)
+   - User (ej. avnadmin)
+   - Password (ej. a1b2c3d4...)
+   - Database Name (ej. defaultdb)
+
+============================================================
+PASO 2: CREAR SERVICIO EN RENDER
+============================================================
+1. Ve a dashboard.render.com y haz clic en "New +" -> "Web Service".
+2. Conecta tu cuenta de GitHub y selecciona el repositorio de "CineMaster".
+3. Configura los detalles básicos:
+   - Name: CineMaster (o lo que gustes).
+   - Region: Elige la más cercana (ej. Ohio US East).
+   - Branch: main (o la rama donde tengas tu código final).
+   - Root Directory: (Déjalo vacío).
+   - Runtime: PHP.
+
+============================================================
+PASO 3: CONFIGURAR COMANDOS DE CONSTRUCCIÓN Y ARRANQUE
+============================================================
+Render necesita saber cómo instalar y ejecutar tu app.
+
+1. Build Command (Comando de Construcción):
+   Copia y pega exactamente esto. Instala dependencias PHP, JS, construye los assets y ejecuta las migraciones de base de datos.
+   
+   composer install --no-dev --optimize-autoloader && npm install && npm run build && php artisan migrate --force
+
+2. Start Command (Comando de Inicio):
+   Esto levanta el servidor.
+   
+   php artisan serve --host=0.0.0.0 --port=$PORT
+
+============================================================
+PASO 4: VARIABLES DE ENTORNO (ENVIRONMENT VARIABLES)
+============================================================
+Esta es la parte MÁS IMPORTANTE. Sin esto, la web fallará.
+Ve a la sección "Environment Variables" (abajo de los comandos) y agrega una por una las siguientes claves y valores.
+
+CLAVE             | VALOR (Lo que debes poner)
+------------------|---------------------------------------------------------
+APP_KEY           | (Copia la clave larga de tu archivo .env local, ej: base64:...)
+APP_ENV           | production
+APP_DEBUG         | false
+APP_URL           | (La URL que te dará Render, ej: https://cinemaster.onrender.com)
+LOG_CHANNEL       | stderr
+DB_CONNECTION     | mysql
+DB_HOST           | (Pega el HOST de Aiven)
+DB_PORT           | (Pega el PUERTO de Aiven)
+DB_DATABASE       | (Pega el NOMBRE DE LA BASE de Aiven)
+DB_USERNAME       | (Pega el USUARIO de Aiven)
+DB_PASSWORD       | (Pega la CONTRASEÑA de Aiven)
+TMDB_TOKEN        | (Copia tu token largo de TMDB de tu .env local)
+DB_SSL_MODE       | required
+
+*Consejo*: Render te genera la URL de tu app arriba del formulario. Cópiala para la variable APP_URL. Si no la tienes aún, pon "http://localhost" y cámbiala después del primer despliegue.
+
+============================================================
+PASO 5: DESPLEGAR
+============================================================
+1. Haz clic en "Create Web Service".
+2. Render empezará a clonar, instalar y configurar.
+3. Observa la consola ("Logs"). Si todo sale bien, verás "Build Successful" y luego el servidor iniciará.
+
+============================================================
+SOLUCIÓN DE PROBLEMAS COMUNES
+============================================================
+- Error 500: Revisa si pusiste bien el APP_KEY. Es obligatorio.
+- Error "Connection Refused" (Base de datos): Verifica el Host y Puerto de Aiven. Asegúrate que Aiven permita conexiones desde cualquier IP (0.0.0.0/0) o revisa sus reglas de firewall.
+- Estilos rotos: Asegúrate de que `npm run build` se ejecutó en el Build Command.
